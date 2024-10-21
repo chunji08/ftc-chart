@@ -1,0 +1,804 @@
+## @section Global parameters
+## Global OCI parameters
+## Please, note that this will override the image parameters, including dependencies, configured to use the global value
+## Current available global OCI parameters: imageRegistry, imagePullSecrets and storageClass
+
+## @param global.imageRegistry Global OCI registry
+## @param global.imagePullSecrets Global Docker registry secret names as an array
+## @param global.defaultStorageClass Global default StorageClass for Persistent Volume(s)
+## @param global.storageClass DEPRECATED: use global.defaultStorageClass instead
+##
+global:
+  imageRegistry: ""
+  ## E.g.
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  imagePullSecrets: []
+  defaultStorageClass: ""
+  storageClass: "csi-sc-cinderplugin"
+  ## @param global.clusterDomain Configures cluster domain ("cluster.local" by default)
+  clusterDomain: "cluster.local"
+  ## Compatibility adaptations for Kubernetes platforms
+  ##
+  compatibility:
+    ## Compatibility adaptations for Openshift
+    ##
+    openshift:
+      ## @param global.compatibility.openshift.adaptSecurityContext Adapt the securityContext sections of the deployment to make them compatible with Openshift restricted-v2 SCC: remove runAsUser, runAsGroup and fsGroup and let the platform use their allowed default IDs. Possible values: auto (apply if the detected running cluster is Openshift), force (perform the adaptation always), disabled (do not perform adaptation)
+      ##
+      adaptSecurityContext: auto
+
+## @section Common parameters
+params: 
+  ## Server properties
+  # -- Run server without TLS
+  ## NOTE: This value should be set when you generate params by other means as it changes ports used by ingress template.
+  server.insecure: false
+  # -- Disable Argo CD RBAC for user authentication
+  server.disable.auth: false
+  # -- Enable GZIP compression
+  server.enable.gzip: true
+  # -- Set X-Frame-Options header in HTTP responses to value. To disable, set to "".
+  server.x.frame.options: sameorigin
+
+## @param kubeVersion Override Kubernetes version
+##
+kubeVersion: ""
+## @param nameOverride String to partially override common.names.fullname
+##
+nameOverride: ""
+## @param fullnameOverride String to fully override common.names.fullname
+##
+fullnameOverride: ""
+## @param commonLabels Labels to add to all deployed objects
+##
+commonLabels: {}
+## @param commonAnnotations Annotations to add to all deployed objects
+##
+commonAnnotations: {}
+## @param extraDeploy Array of extra objects to deploy with the release
+##
+extraDeploy: []
+## @section Faas parameters
+
+## Faas image
+## ref: harbor.test.myfaccloud-301.com/harbor/projects/2/repositories/fortitokencloud/tags/
+## @param image.registry [default: REGISTRY_NAME] Faas image registry
+## @param image.repository [default: REPOSITORY_NAME/Faas] Faas image repository
+## @skip image.tag Faas image tag (immutable tags are recommended)
+## @param image.digest Faas image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
+## @param image.pullPolicy Faas image pull policy
+## @param image.pullSecrets Faas image pull secrets
+## @param image.debug Enable image debug mode
+##
+image:
+  registry: harbor.test.myfaccloud-301.com
+  repository: demogitops/faas-server-generic
+  tag: 1.0.0
+  digest: ""
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
+  ##
+  pullPolicy: IfNotPresent
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+  ## e.g:
+  ## pullSecrets:
+  ##   - myRegistryKeySecretName
+  ##
+  pullSecrets: []
+  ## Enable debug mode
+  ##
+  debug: false
+
+## @param replicaCount Number of replicas of the Faas deployment
+##
+replicaCount: 1
+## @param revisionHistoryLimit The number of old history to retain to allow rollback
+##
+revisionHistoryLimit: 10
+## @param podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+##
+podAffinityPreset: ""
+## @param podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+##
+podAntiAffinityPreset: soft
+# Faas configuration parameters
+## Node affinity preset
+## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+##
+nodeAffinityPreset:
+  ## @param nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+  ##
+  type: ""
+  ## @param nodeAffinityPreset.key Node label key to match. Ignored if `affinity` is set
+  ##
+  key: ""
+  ## @param nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set
+  ## E.g.
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  ##
+  values: []
+## @param affinity Affinity for pod assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## NOTE: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+##
+affinity: {}
+## @param nodeSelector Node labels for pod assignment
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+##
+nodeSelector: {}
+## @param tolerations Tolerations for pod assiimgnment
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+## @param topologySpreadConstraints Topology Spread Constraints for pod assignment spread across your cluster among failure-domains. Evaluated as a template
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods
+##
+topologySpreadConstraints: []
+## @param podLabels Extra labels for Faas pods
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
+##
+podLabels: {}
+## @param podAnnotations Pod annotations
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+##
+podAnnotations: {}
+## @param automountServiceAccountToken Mount Service Account token in pod
+##
+automountServiceAccountToken: false
+## @param hostAliases [array] Add deployment host aliases
+## https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/
+##
+hostAliases:
+  ## Necessary for Faas-exporter to work
+  ##
+  - ip: "127.0.0.1"
+    hostnames:
+      - "status.localhost"
+## @param priorityClassName Faas Server pods' priorityClassName
+##
+priorityClassName: ""
+## @param schedulerName Name of the k8s scheduler (other than default)
+## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+##
+schedulerName: ""
+## Configure Pods Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param podSecurityContext.enabled Enabled Faas Server pods' Security Context
+## @param podSecurityContext.fsGroupChangePolicy Set filesystem group change policy
+## @param podSecurityContext.sysctls Set kernel settings using the sysctl interface
+## @param podSecurityContext.supplementalGroups Set filesystem extra groups
+## @param podSecurityContext.fsGroup Set Faas Server pod's Security Context fsGroup
+##
+podSecurityContext:
+  enabled: true
+  fsGroupChangePolicy: Always
+  sysctls: []
+  supplementalGroups: []
+  fsGroup: 1001
+## Configure Container Security Context
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod
+## @param containerSecurityContext.enabled Enabled Faas Server containers' Security Context
+## @param containerSecurityContext.seLinuxOptions [object,nullable] Set SELinux options in container
+## @param containerSecurityContext.runAsUser Set Faas Server containers' Security Context runAsUser
+## @param containerSecurityContext.runAsGroup Set Faas Server containers' Security Context runAsGroup
+## @param containerSecurityContext.runAsNonRoot Set Controller container's Security Context runAsNonRoot
+## @param containerSecurityContext.privileged Set primary container's Security Context privileged
+## @param containerSecurityContext.allowPrivilegeEscalation Set primary container's Security Context allowPrivilegeEscalation
+## @param containerSecurityContext.readOnlyRootFilesystem Set primary container's Security Context readOnlyRootFilesystem
+## @param containerSecurityContext.capabilities.drop List of capabilities to be dropped
+## @param containerSecurityContext.seccompProfile.type Set container's Security Context seccomp profile
+##
+containerSecurityContext:
+  enabled: true
+  seLinuxOptions: {}
+  runAsUser: 1000
+  runAsGroup: 2000
+  runAsNonRoot: true
+  privileged: false
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+  seccompProfile:
+    type: "RuntimeDefault"
+## @param command Override default container command (useful when using custom images)
+##
+command: ["fas-server", "--config-file"]
+# command: ["/bin/bash", "-c", "--"]
+## @param args Override default container args (useful when using custom images)
+##
+args: ["/etc/fas/fas.conf"]
+# args: ["while true; do sleep 30; done;"]
+## @param lifecycleHooks for the Faas server container(s) to automate configuration before or after startup
+##
+lifecycleHooks: {}
+## Faas pods' resource requests and limits
+## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+## @param resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if resources is set (resources is recommended for production).
+## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
+##
+resourcesPreset: "nano"
+## @param resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+## Example:
+## resources:
+##   requests:
+##     cpu: 2
+##     memory: 512Mi
+##   limits:
+##     cpu: 3
+##     memory: 1024Mi
+##
+resources: {}
+## Configure extra options for containers' liveness and readiness probes
+## Configure extra options for Faas server containers' liveness, readiness and startup probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
+## @param startupProbe.enabled Enable startupProbe
+## @param startupProbe.path Path to access on the HTTP server
+## @param startupProbe.port Port for startupProbe
+## @param startupProbe.initialDelaySeconds Initial delay seconds for startupProbe
+## @param startupProbe.periodSeconds Period seconds for startupProbe
+## @param startupProbe.timeoutSeconds Timeout seconds for startupProbe
+## @param startupProbe.failureThreshold Failure threshold for startupProbe
+## @param startupProbe.successThreshold Success threshold for startupProbe
+##
+startupProbe:
+  enabled: false
+  path: "/"
+  port: http
+  initialDelaySeconds: 180
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+## @param livenessProbe.enabled Enable liveness probe
+## @param livenessProbe.port Port for livenessProbe
+## @param livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+## @param livenessProbe.periodSeconds Period seconds for livenessProbe
+## @param livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+## @param livenessProbe.failureThreshold Failure threshold for livenessProbe
+## @param livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: false
+  port: http
+  initialDelaySeconds: 180
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+## @param readinessProbe.enabled Enable readiness probe
+## @param readinessProbe.path Path to access on the HTTP server
+## @param readinessProbe.port Port for readinessProbe
+## @param readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+## @param readinessProbe.periodSeconds Period seconds for readinessProbe
+## @param readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+## @param readinessProbe.failureThreshold Failure threshold for readinessProbe
+## @param readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: false
+  path: "/"
+  port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+## @param customStartupProbe Custom liveness probe for the Web component
+##
+customStartupProbe: {}
+## @param customLivenessProbe Custom liveness probe for the Web component
+##
+customLivenessProbe: {}
+## @param customReadinessProbe Custom rediness probe for the Web component
+##
+customReadinessProbe: {}
+## @param defaultVolumes Array to add default volumes (evaluated as a template)
+##
+defaultVolumes:
+  - name: configuration
+    configMap:
+      name: faas-release
+      defaultMode: 0700
+      items:
+        - key: devices.yaml
+          path: devices.yaml
+        - key: fas.conf
+          path: fas.conf
+  - name: log
+    emptyDir:
+      sizeLimit: 500Mi
+      defaultMode: 0700
+  - name: subca
+    secret: 
+      secretName: faas-subca-ssl-secret
+## @param extraVolumeMounts Array to add default mounts (normally used with defaultVolumes, evaluated as a template)
+##
+defaultVolumeMounts:
+  - name: configuration
+    mountPath: /etc/fas
+    readOnly: true
+  - name: log
+    mountPath: /var/log/fas
+  - name: subca
+    mountPath: /etc/fas/ssl/subca
+    readOnly: true
+## @param extraVolumes Array to add extra volumes (evaluated as a template)
+##
+extraVolumes: []
+## @param extraVolumeMounts Array to add extra mounts (normally used with extraVolumes, evaluated as a template)
+##
+extraVolumeMounts: []
+## @param extraPodSpec Optionally specify extra PodSpec
+##
+extraPodSpec: {}
+## @param extraEnvVars Array to add extra environment variables
+##
+extraEnvVars: []
+## @param extraEnvVarsCM Name of existing ConfigMap containing extra env vars for Faas server nodes
+##
+extraEnvVarsCM: ""
+## @param extraEnvVarsSecret Name of existing Secret containing extra env vars for Faas server nodes
+##
+extraEnvVarsSecret: ""
+## Faas server container port
+## @param containerPorts.http Faas server HTTP container port
+## @param containerPorts.https Faas server HTTPS container port
+##
+containerPorts:
+  http: 9696
+  https: 8686
+## @param initContainers Add additional init containers to the Faas pods
+## Example:
+## initContainers:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+initContainers: []
+## @param sidecars Add additional sidecar containers to the Faas pods
+## Example:
+## sidecars:
+##   - name: your-image-name
+##     image: your-image
+##     imagePullPolicy: Always
+##     ports:
+##       - name: portname
+##         containerPort: 1234
+##
+sidecars: []
+## @param updateStrategy.type Faas Server deployment strategy type.
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+## e.g:
+## updateStrategy:
+##  type: RollingUpdate
+##  rollingUpdate:
+##    maxSurge: 25%
+##    maxUnavailable: 25%
+##
+updateStrategy:
+  type: RollingUpdate
+## @section Other Parameters
+
+## Faas Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+## @param pdb.create Enable a Pod Disruption Budget creation
+## @param pdb.minAvailable Minimum number/percentage of pods that should remain scheduled
+## @param pdb.maxUnavailable Maximum number/percentage of pods that may be made unavailable
+##
+pdb:
+  create: true
+  minAvailable: ""
+  maxUnavailable: ""
+## Faas Autoscaling parameters
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+## @param autoscaling.enabled Enable Horizontal POD autoscaling for Faas
+## @param autoscaling.minReplicas Minimum number of Faas replicas
+## @param autoscaling.maxReplicas Maximum number of Faas replicas
+## @param autoscaling.targetCPU Target CPU utilization percentage
+## @param autoscaling.targetMemory Target Memory utilization percentage
+##
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 11
+  targetCPU: 50
+  targetMemory: 50
+## @section Traffic Exposure Parameters
+
+## Faas service parameters
+##
+service:
+  ## @param faas.service.type Faas Service type
+  type: ClusterIP
+  ## @param faas.service.labels Labels that can be used for service
+  ##
+  labels: {}
+  ## @param faas.service.servicePortHttpName faas service HTTP port name
+  ## @param faas.service.servicePortHttpsName faas service HTTPS port name
+  ##
+  servicePortHttpName: http
+  servicePortHttpsName: https
+  ## @param faas.service.servicePortHttp faas service HTTP port
+  ## @param faas.service.servicePortHttps faas service HTTPS port
+  ##
+  servicePortHttp: 8686
+  servicePortHttps: 9696
+  ## @param faas.service.servicePortHttpTargetPort The HTTP port on which the service will send requests to, that your faas pod will be listening on
+  ## @param faas.service.servicePortHttpsTargetPort The HTTPS port on which the service will send requests to, that your faas pod will be listening on
+  ##
+  servicePortHttpTargetPort: 8686
+  servicePortHttpsTargetPort: 9696
+  ## Node ports to expose (only if `faas.service.type` is set to "NodePort")
+  ## @param faas.service.nodePortHttp Node port for HTTP
+  ## @param faas.service.nodePortHttps Node port for HTTPS
+  ##
+  nodePortHttp: 8686
+  nodePortHttps: 9696
+  ## @param faas.service.servicePortHttpsAppProtocol Faas service https port appProtocol
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol
+  servicePortHttpsAppProtocol: ""
+  ## @param faas.service.extraPorts Extra ports to expose (normally used with the `sidecar` value)
+  ##
+  extraPorts: []
+  ## @param faas.service.loadBalancerClass The class of the load balancer implementation
+  loadBalancerClass: ""
+  ## @param faas.service.loadBalancerIP LoadBalancer will get created with the IP specified in this field
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer
+  ##
+  loadBalancerIP: ""
+  ## @param faas.service.loadBalancerSourceRanges Source IP ranges of faas service to allow access to service from
+  ## ref: https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  ## e.g:
+  ## loadBalancerSourceRanges:
+  ##   - 10.10.10.0/24
+  ##
+  loadBalancerSourceRanges: []
+  ## @param faas.service.annotations Additional custom annotations for Faas service
+  ## This can be used to set the LoadBalancer service type to internal only.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+  ##
+  annotations: {}
+  ## @param faas.service.externalIPs Faas service external IPs
+  externalIPs: []
+  ## @param faas.service.externalTrafficPolicy Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
+  ## ref https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/#preserving-the-client-source-ip
+  ##
+  externalTrafficPolicy: Cluster
+  ## @param faas.service.sessionAffinity Session Affinity for Kubernetes service, can be "None" or "ClientIP"
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+  ##
+  sessionAffinity: None
+  ## @param faas.service.sessionAffinityConfig Additional settings for the sessionAffinity
+  ## sessionAffinityConfig:
+  ##   clientIP:
+  ##     timeoutSeconds: 300
+  ##
+  sessionAffinityConfig: {}
+## Network Policies
+## Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+##
+networkPolicy:
+  ## @param networkPolicy.enabled Specifies whether a NetworkPolicy should be created
+  ##
+  enabled: false
+  ## @param networkPolicy.allowExternal Don't require server label for connections
+  ## The Policy model to apply. When set to false, only pods with the correct
+  ## server label will have network access to the ports server is listening
+  ## on. When true, server will accept connections from any source
+  ## (with the correct destination port).
+  ##
+  allowExternal: true
+  ## @param networkPolicy.allowExternalEgress Allow the pod to access any range of port and all destinations.
+  ##
+  allowExternalEgress: true
+  ## @param networkPolicy.extraIngress [array] Add extra ingress rules to the NetworkPolicy
+  ## e.g:
+  ## extraIngress:
+  ##   - ports:
+  ##       - port: 1234
+  ##     from:
+  ##       - podSelector:
+  ##           - matchLabels:
+  ##               - role: frontend
+  ##       - podSelector:
+  ##           - matchExpressions:
+  ##               - key: role
+  ##                 operator: In
+  ##                 values:
+  ##                   - frontend
+  extraIngress: []
+  ## @param networkPolicy.extraEgress [array] Add extra ingress rules to the NetworkPolicy (ignored if allowExternalEgress=true)
+  ## e.g:
+  ## extraEgress:
+  ##   - ports:
+  ##       - port: 1234
+  ##     to:
+  ##       - podSelector:
+  ##           - matchLabels:
+  ##               - role: frontend
+  ##       - podSelector:
+  ##           - matchExpressions:
+  ##               - key: role
+  ##                 operator: In
+  ##                 values:
+  ##                   - frontend
+  ##
+  extraEgress: []
+  ## @param networkPolicy.ingressNSMatchLabels [object] Labels to match to allow traffic from other namespaces
+  ## @param networkPolicy.ingressNSPodMatchLabels [object] Pod labels to match to allow traffic from other namespaces
+  ##
+  ingressNSMatchLabels: {}
+  ingressNSPodMatchLabels: {}
+## Configure the ingress resource that allows you to access the Faas workload
+ingress:
+  ## @param faas.ingress.enabled Enable ingress record generation for faas workload
+  ##
+  enabled: false
+  ## @param faas.ingress.selfSigned Create a TLS secret for this ingress record using self-signed certificates generated by Helm
+  ##
+  selfSigned: false
+  ## @param faas.ingress.pathType Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific`
+  ##
+  pathType: ImplementationSpecific
+  ## @param faas.ingress.apiVersion Force Ingress API version (automatically detected if not set)
+  ##
+  apiVersion: ""
+  ## @param ingress.ingressClassName IngressClass that will be be used to implement the Ingress (Kubernetes 1.18+)
+  ## IngressClassName is used to reference the IngressClass that should be used to implement this Ingress.
+  ## This is supported in Kubernetes 1.18+ and required if you have more than one IngressClass marked as the default for your cluster.
+  ## ref: https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/
+  ##
+  ingressClassName: ""
+  ## @param faas.ingress.hostname Default host for the ingress record
+  ##
+  hostname: faas.test.myfaccloud-301.com
+  ## @param faas.ingress.path Default path for the ingress record
+  ## NOTE: You may need to set this to '/*' in order to use this with ALB ingress controllers
+  ##
+  path: /
+  ## @param faas.ingress.annotations Additional annotations for the Ingress resource. To enable certificate autogeneration, place here your cert-manager annotations.
+  ## For a full list of possible ingress annotations, please see
+  ## ref: https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/annotations.md
+  ## Use this parameter to set the required annotations for cert-manager, see
+  ## ref: https://cert-manager.io/docs/usage/ingress/#supported-annotations
+  ##
+  ## e.g:
+  ## annotations:
+  ##   kubernetes.io/ingress.class: nginx
+  ##   cert-manager.io/cluster-issuer: cluster-issuer-name
+  ##
+  annotations: {}
+  ## @param faas.ingress.tls Enable TLS configuration for the host defined at `ingress.hostname` parameter
+  ## TLS certificates will be retrieved from a TLS secret with name: `{{- printf "%s-tls" .Values.faas.ingress.hostname }}`
+  ## There are 3 options:
+  ##   - Use the `faas.ingress.secrets` parameter to create this TLS secret
+  ##   - Rely on cert-manager to create it by setting the corresponding annotations
+  ##   - Rely on Helm to create self-signed certificates by setting `faas.ingress.selfSigned=true`
+  ##
+  tls: false
+  ## @param faas.ingress.extraHosts An array with additional hostname(s) to be covered with the ingress record
+  ## e.g:
+  ## extraHosts:
+  ##   - name: faas.local
+  ##     path: /
+  ##
+  extraHosts: []
+  ## @param faas.ingress.extraPaths An array with additional arbitrary paths that may need to be added to the ingress under the main host
+  ## e.g:
+  ## extraPaths:
+  ## - path: /*
+  ##   backend:
+  ##     serviceName: ssl-redirect
+  ##     servicePort: use-annotation
+  ##
+  extraPaths: []
+  ## @param faas.ingress.extraTls TLS configuration for additional hostname(s) to be covered with this ingress record
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  ## e.g:
+  ## extraTls:
+  ## - hosts:
+  ##     - faas.local
+  ##   secretName: faas.local-tls
+  ##
+  extraTls: []
+  ## @param faas.ingress.secrets Custom TLS certificates as secrets
+  ## NOTE: 'key' and 'certificate' are expected in PEM format
+  ## NOTE: 'name' should line up with a 'secretName' set further up
+  ## If it is not set and you're using cert-manager, this is unneeded, as it will create a secret for you with valid certificates
+  ## If it is not set and you're NOT using cert-manager either, self-signed certificates will be created valid for 365 days
+  ## It is also possible to create and manage the certificates outside of this helm chart
+  ## Please see README.md for more information
+  ## e.g:
+  ## secrets:
+  ##   - name: faas.local-tls
+  ##     key: |-
+  ##       -----BEGIN RSA PRIVATE KEY-----
+  ##       ...
+  ##       -----END RSA PRIVATE KEY-----
+  ##     certificate: |-
+  ##       -----BEGIN CERTIFICATE-----
+  ##       ...
+  ##       -----END CERTIFICATE-----
+  ##
+  secrets: []
+  ## @param faas.ingress.extraRules Additional rules to be covered with this ingress record
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules
+  ## e.g:
+  ## extraRules:
+  ## - host: faas.local
+  ##     http:
+  ##       path: /
+  ##       backend:
+  ##         service:
+  ##           name: faas-svc
+  ##           port:
+  ##             name: http
+  ##
+  extraRules: []
+## @section Metrics Parameters
+metrics:
+  ## @param metrics.enabled Start a sidecar prometheus exporter to expose Faas metrics
+  ##
+  enabled: false
+  ## Bitnami Faas Prometheus Exporter image
+  ## ref: https://hub.docker.com/r/bitnami/Faas-exporter/tags/
+  ## @param metrics.image.registry [default: REGISTRY_NAME] Faas Exporter image registry
+  ## @param metrics.image.repository [default: REPOSITORY_NAME/Faas-exporter] Faas Exporter image repository
+  ## @skip metrics.image.tag Faas Exporter image tag (immutable tags are recommended)
+  ## @param metrics.image.digest Faas Exporter image digest in the way sha256:aa.... Please note this parameter, if set, will override the tag
+  ## @param metrics.image.pullPolicy Faas Exporter image pull policy
+  ## @param metrics.image.pullSecrets Faas Exporter image pull secrets
+  ## @param metrics.image.debug Faas Exporter image debug mode
+  ##
+  image:
+    registry: docker.io
+    repository: bitnami/Faas-exporter
+    tag: 1.0.8-debian-12-r6
+    digest: ""
+    pullPolicy: IfNotPresent
+    ## Optionally specify an array of imagePullSecrets.
+    ## Secrets must be manually created in the namespace.
+    ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+    ## e.g:
+    ## pullSecrets:
+    ##   - myRegistryKeySecretName
+    ##
+    pullSecrets: []
+    ## Enable debug mode
+    ##
+    debug: false
+  ## @param metrics.podAnnotations [object] Additional custom annotations for Faas exporter service
+  ##
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9117"
+  ## Faas Prometheus exporter resource requests and limits
+  ## ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ## @param metrics.resourcesPreset Set container resources according to one common preset (allowed values: none, nano, micro, small, medium, large, xlarge, 2xlarge). This is ignored if metrics.resources is set (metrics.resources is recommended for production).
+  ## More information: https://github.com/bitnami/charts/blob/main/bitnami/common/templates/_resources.tpl#L15
+  ##
+  resourcesPreset: "none"
+  ## @param metrics.resources Set container requests and limits for different resources like CPU or memory (essential for production workloads)
+  ## Example:
+  ## resources:
+  ##   requests:
+  ##     cpu: 2
+  ##     memory: 512Mi
+  ##   limits:
+  ##     cpu: 3
+  ##     memory: 1024Mi
+  ##
+  resources: {}
+  ## @param metrics.containerPort Faas Prometheus Exporter container port
+  ##
+  containerPort: 9141
+  ## Prometheus exporter service parameters
+  service:
+    ## @param metrics.service.port Metrics service port
+    ##
+    port: 9117
+    ## @param metrics.service.annotations [object] Additional custom annotations for Metrics service
+    ##
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "{{ .Values.metrics.service.port }}"
+  ## Prometheus Operator PodMonitor configuration
+  ##
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled if `true`, creates a Prometheus Operator PodMonitor (also requires `metrics.enabled` to be `true`)
+    ##
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace Namespace for the PodMonitor Resource (defaults to the Release Namespace)
+    ##
+    namespace: ""
+    ## @param metrics.serviceMonitor.interval Interval at which metrics should be scraped.
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ## e.g:
+    ## interval: 10s
+    ##
+    interval: ""
+    ## @param metrics.serviceMonitor.scrapeTimeout Timeout after which the scrape is ended
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#endpoint
+    ## e.g:
+    ## scrapeTimeout: 10s
+    ##
+    scrapeTimeout: ""
+    ## @param metrics.serviceMonitor.labels Labels that can be used so PodMonitor will be discovered by Prometheus
+    ##
+    labels: {}
+    ## @param metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+    ##
+    relabelings: []
+    ## @param metrics.serviceMonitor.metricRelabelings MetricRelabelConfigs to apply to samples before ingestion
+    ##
+    metricRelabelings: []
+  ## Prometheus Operator PrometheusRule configuration
+  ##
+  prometheusRule:
+    ## @param metrics.prometheusRule.enabled if `true`, creates a Prometheus Operator PrometheusRule (also requires `metrics.enabled` to be `true` and `metrics.prometheusRule.rules`)
+    ##
+    enabled: false
+    ## @param metrics.prometheusRule.namespace Namespace for the PrometheusRule Resource (defaults to the Release Namespace)
+    ##
+    namespace: ""
+    ## @param metrics.prometheusRule.labels Labels that can be used so PrometheusRule will be discovered by Prometheus
+    ##
+    labels: {}
+    ## @param metrics.prometheusRule.rules Prometheus Rule definitions
+    ##   - alert: LowInstance
+    ##     expr: up{service="{{ template "common.names.fullname" . }}"} < 1
+    ##     for: 1m
+    ##     labels:
+    ##       severity: critical
+    ##     annotations:
+    ##       description: Service {{ template "common.names.fullname" . }} Faas is down since 1m.
+    ##       summary: Faas instance is down.
+    ##
+    rules: []
+## Service Account
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+##
+serviceAccount:
+  ## @param serviceAccount.create Enable creation of ServiceAccount for Faas pod
+  ##
+  create: true
+  ## @param serviceAccount.name The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the common.names.fullname template
+  ##
+  name: "faas"
+  ## @param serviceAccount.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
+  ## Can be set to false if pods using this serviceAccount do not need to use K8s API
+  ##
+  automountServiceAccountToken: false
+  ## @param serviceAccount.annotations Additional custom annotations for the ServiceAccount
+  ##
+  annotations: {}
+
+
+## @Section for crafting Faas config file. The only directly relevant value is `faas.conf`
+config:
+  ## @param metrics.enabled Set `configmap.enabled: true` and this to `false` to manage your own Promtail config
+  ##
+  enabled: true
+

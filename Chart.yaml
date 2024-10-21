@@ -1,0 +1,7 @@
+apiVersion: v2
+appVersion: 1.16.0
+description: A Helm chart for Faas
+kubeVersion: '>=1.25.0-0'
+name: faas
+type: application
+version: 0.1.1
